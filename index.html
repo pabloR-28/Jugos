@@ -506,7 +506,7 @@
     <script>
         // Configuración
         const ADMIN_PIN = '2050';
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzi6bYbuIoI2Xa8zDMuTCAO5nm1sR1_q_yBqYDchLuia76GXV537GMGp1I17OlV8u46/exec';
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxBs6gPnV10c4GuZBr_GKWaGK4iCFwRlbwnehniRv_9fBkGGasID9SOLLXiWic0-MOB/exec';
         const BACKUP_INTERVAL = 3 * 60000; // 3 minutos
         
         // Variables globales
@@ -541,48 +541,28 @@
         
         // Funciones de Google Sheets
       async function syncToGoogleSheets(saleData) {
-    try {
-        console.log("Enviando datos a Google Sheets:", saleData); // Nuevo
-        isSyncing = true;
-        updateConnectionStatus('syncing');
-        
-        const response = await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                action: 'addSale',
-                data: saleData
-            })
-        });
-        
-        console.log("Respuesta recibida:", response); // Nuevo
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        console.log("Resultado parseado:", result); // Nuevo
-        
-        if (result.success) {
-            updateConnectionStatus('online');
-            showNotification('Venta sincronizada con Google Sheets', 'success');
-            return true;
-        } else {
-            throw new Error(result.error || 'Error desconocido');
-        }
-        
-    } catch (error) {
-        console.error('Error completo:', error); // Mejorado
-        updateConnectionStatus('offline');
-        showNotification('Error al sincronizar con Google Sheets', 'error');
-        return false;
-    } finally {
-        isSyncing = false;
-    }
-}
+  try {
+    const response = await fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST", // ← Método POST
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "addSale",
+        data: saleData // Datos de la venta
+      })
+    });
 
-        async function loadSalesFromSheet() {
+    const result = await response.json();
+    if (!result.success) throw new Error(result.error);
+    
+    showNotification("✅ Venta registrada en Google Sheets!");
+    return true;
+
+  } catch (error) {
+    console.error("Error:", error);
+    showNotification(`❌ Error al sincronizar: ${error.message}`, "error");
+    return false;
+  }
+}        async function loadSalesFromSheet() {
             try {
                 updateConnectionStatus('syncing');
                 const currentDate = document.getElementById('currentDate').value;
