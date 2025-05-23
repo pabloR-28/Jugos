@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Control de Ventas de Jugos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #fef3e2 0%, #fef9e7 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .section {
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #ff6b35;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #ff6b35;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #e55a2b;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ff6b35;
+        }
+        
+        .card h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .card-green {
+            border-left-color: #28a745;
+        }
+        
+        .card-blue {
+            border-left-color: #007bff;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .stat-value {
+            font-weight: 600;
+            color: #28a745;
+        }
+        
+        .sales-list {
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        
+        .sale-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+        
+        .sale-info {
+            flex: 1;
+        }
+        
+        .sale-price {
+            font-weight: 600;
+            color: #28a745;
+            margin-right: 10px;
+        }
+        
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .actions {
+            padding: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .actions .btn {
+            flex: 1;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .success-animation {
+            background: #d4edda !important;
+            transition: background-color 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🥤 Control de Jugos</h1>
+            <p>Sistema de ventas diarias</p>
+        </div>
+        
+        <div class="section">
+            <div class="input-group">
+                <label>📅 Fecha</label>
+                <input type="date" id="currentDate">
+            </div>
+            <div class="input-group">
+                <label>👤 Empleado en Turno</label>
+                <input type="text" id="employeeName" placeholder="Nombre del empleado">
+            </div>
+            <div class="input-group">
+                <label>💰 Capital Inicial</label>
+                <input type="number" id="startingCapital" placeholder="0">
+            </div>
+        </div>
+        
+        <div class="section">
+            <h3 style="margin-bottom: 15px; color: #333;">Registrar Nueva Venta</h3>
+            <div class="input-group">
+                <label>🥤 Tipo de Jugo</label>
+                <select id="selectedJuice">
+                    <option value="agua">Jugo en Agua - $5,000</option>
+                    <option value="leche">Jugo en Leche - $7,000</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>💳 Tipo de Pago</label>
+                <select id="selectedPayment">
+                    <option value="efectivo">Efectivo</option>
+                    <option value="transferencia">Transferencia</option>
+                    <option value="tarjeta">Tarjeta</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="addSale()" style="width: 100%;">
+                ➕ Registrar Venta
+            </button>
+        </div>
+        
+        <div class="section">
+            <div class="summary-cards">
+                <div class="card card-green">
+                    <h3>💰 Resumen del Día</h3>
+                    <div class="stat-row">
+                        <span>Total Ventas:</span>
+                        <span class="stat-value" id="totalSales">$0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Cantidad:</span>
+                        <span id="salesCount">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>En Caja:</span>
+                        <span class="stat-value" id="expectedCash">$0</span>
+                    </div>
+                </div>
+                
+                <div class="card card-blue">
+                    <h3>💳 Por Type de Pago</h3>
+                    <div class="stat-row">
+                        <span>Efectivo:</span>
+                        <span id="cashTotal">$0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Transferencia:</span>
+                        <span id="transferTotal">$0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Tarjeta:</span>
+                        <span id="cardTotal">$0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h3 style="margin-bottom: 15px; color: #333;">Ventas de Hoy</h3>
+            <div class="sales-list" id="salesList">
+                <div class="empty-state">
+                    No hay ventas registradas aún
+                </div>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <button class="btn btn-success" onclick="exportToCSV()" id="exportBtn" disabled>
+                📊 Exportar
+            </button>
+            <button class="btn btn-danger" onclick="resetDay()">
+                🔄 Reiniciar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let sales = [];
+        
+        const juiceTypes = {
+            agua: { name: 'Jugo en Agua', price: 5000 },
+            leche: { name: 'Jugo en Leche', price: 7000 }
+        };
+        
+        // Inicializar fecha actual
+        document.getElementById('currentDate').value = new Date().toISOString().split('T')[0];
+        
+        function addSale() {
+            const employeeName = document.getElementById('employeeName').value.trim();
+            const selectedJuice = document.getElementById('selectedJuice').value;
+            const selectedPayment = document.getElementById('selectedPayment').value;
+            
+            if (!employeeName) {
+                alert('Por favor ingresa el nombre del empleado');
+                return;
+            }
+            
+            const newSale = {
+                id: Date.now(),
+                juiceType: selectedJuice,
+                name: juiceTypes[selectedJuice].name,
+                price: juiceTypes[selectedJuice].price,
+                paymentType: selectedPayment,
+                employee: employeeName,
+                time: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
+                date: document.getElementById('currentDate').value
+            };
+            
+            sales.push(newSale);
+            updateDisplay();
+            
+            // Animación de éxito
+            const container = document.querySelector('.container');
+            container.classList.add('success-animation');
+            setTimeout(() => container.classList.remove('success-animation'), 500);
+        }
+        
+        function deleteSale(id) {
+            if (confirm('¿Eliminar esta venta?')) {
+                sales = sales.filter(sale => sale.id !== id);
+                updateDisplay();
+            }
+        }
+        
+        function updateDisplay() {
+            // Calcular totales
+            const totalSales = sales.reduce((sum, sale) => sum + sale.price, 0);
+            const salesByPayment = {
+                efectivo: sales.filter(s => s.paymentType === 'efectivo').reduce((sum, s) => sum + s.price, 0),
+                transferencia: sales.filter(s => s.paymentType === 'transferencia').reduce((sum, s) => sum + s.price, 0),
+                tarjeta: sales.filter(s => s.paymentType === 'tarjeta').reduce((sum, s) => sum + s.price, 0)
+            };
+            
+            const startingCapital = parseInt(document.getElementById('startingCapital').value) || 0;
+            const expectedCash = startingCapital + salesByPayment.efectivo;
+            
+            // Actualizar resumen
+            document.getElementById('totalSales').textContent = `$${totalSales.toLocaleString()}`;
+            document.getElementById('salesCount').textContent = sales.length;
+            document.getElementById('expectedCash').textContent = `$${expectedCash.toLocaleString()}`;
+            document.getElementById('cashTotal').textContent = `$${salesByPayment.efectivo.toLocaleString()}`;
+            document.getElementById('transferTotal').textContent = `$${salesByPayment.transferencia.toLocaleString()}`;
+            document.getElementById('cardTotal').textContent = `$${salesByPayment.tarjeta.toLocaleString()}`;
+            
+            // Actualizar lista de ventas
+            const salesList = document.getElementById('salesList');
+            if (sales.length === 0) {
+                salesList.innerHTML = '<div class="empty-state">No hay ventas registradas aún</div>';
+            } else {
+                salesList.innerHTML = sales.map(sale => `
+                    <div class="sale-item">
+                        <div class="sale-info">
+                            <div style="font-weight: 600;">${sale.name}</div>
+                            <div style="color: #666; font-size: 12px;">
+                                ${sale.time} | ${sale.paymentType} | ${sale.employee}
+                            </div>
+                        </div>
+                        <span class="sale-price">$${sale.price.toLocaleString()}</span>
+                        <button class="delete-btn" onclick="deleteSale(${sale.id})">×</button>
+                    </div>
+                `).join('');
+            }
+            
+            // Habilitar botón de exportar
+            document.getElementById('exportBtn').disabled = sales.length === 0;
+        }
+        
+        function exportToCSV() {
+            const startingCapital = parseInt(document.getElementById('startingCapital').value) || 0;
+            const totalSales = sales.reduce((sum, sale) => sum + sale.price, 0);
+            const salesByPayment = {
+                efectivo: sales.filter(s => s.paymentType === 'efectivo').reduce((sum, s) => sum + s.price, 0),
+                transferencia: sales.filter(s => s.paymentType === 'transferencia').reduce((sum, s) => sum + s.price, 0),
+                tarjeta: sales.filter(s => s.paymentType === 'tarjeta').reduce((sum, s) => sum + s.price, 0)
+            };
+            
+            const headers = ['Fecha', 'Hora', 'Empleado', 'Producto', 'Precio', 'Tipo de Pago'];
+            const csvData = [
+                headers.join(','),
+                ...sales.map(sale => [
+                    sale.date,
+                    sale.time,
+                    sale.employee,
+                    sale.name,
+                    sale.price,
+                    sale.paymentType
+                ].join(','))
+            ].join('\n');
+            
+            const summary = [
+                '',
+                'RESUMEN DEL DIA',
+                `Capital Inicial,${startingCapital}`,
+                `Total Ventas,${totalSales}`,
+                `Efectivo,${salesByPayment.efectivo}`,
+                `Transferencia,${salesByPayment.transferencia}`,
+                `Tarjeta,${salesByPayment.tarjeta}`,
+                `Total Esperado en Caja,${startingCapital + salesByPayment.efectivo}`
+            ].join('\n');
+            
+            const finalCSV = csvData + summary;
+            const currentDate = document.getElementById('currentDate').value;
+            
+            const blob = new Blob([finalCSV], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `ventas_jugos_${currentDate}.csv`;
+            link.click();
+        }
+        
+        function resetDay() {
+            if (confirm('¿Estás seguro de que quieres reiniciar el día? Se perderán todas las ventas registradas.')) {
+                sales = [];
+                document.getElementById('startingCapital').value = '';
+                document.getElementById('employeeName').value = '';
+                updateDisplay();
+            }
+        }
+        
+        // Inicializar display
+        updateDisplay();
+    </script>
+</body>
+</html>
